@@ -34,7 +34,8 @@ class LibraryManagementGUI:
         # Create buttons to choose between Admin and Customer sides
         self.admin_button = tk.Button(self.root, text='Admin', command=self.show_admin)
         self.admin_button.pack(side='left', padx=10, pady=10)
-        self.customer_button = tk.Button(self.root, text='Customer', command=self.show_customer)
+        self.customer_button = tk.Button(self.root, text='Customer',
+                                         command=lambda: [self.show_customer(), self.rent_book()])
         self.customer_button.pack(side='right', padx=10, pady=10)
 
         # Create labels and input fields for Customer frame
@@ -55,6 +56,9 @@ class LibraryManagementGUI:
         # Create a delete button for removing a book
         self.delete_book_button = tk.Button(self.admin_frame, text='Delete Book', command=self.delete_book)
         self.delete_book_button.pack(pady=10)
+
+        self.rent_book_button = tk.Button(self.customer_frame, text='Rent Book', command=self.rent_book)
+        self.rent_book_button.pack(pady=10)
 
         # Hide the Admin and Customer frames initially
         self.admin_frame.pack_forget()
@@ -125,6 +129,20 @@ class LibraryManagementGUI:
         # Show the Customer frame and hide the Admin frame
         self.customer_frame.pack(side='right')
         self.admin_frame.pack_forget()
+        self.rent_date_label = tk.Label(self.customer_frame, text='Rent Date')
+        self.rent_date_label.pack()
+        self.rent_date_entry = tk.Entry(self.customer_frame)
+        self.rent_date_entry.pack()
+
+        self.return_date_label = tk.Label(self.customer_frame, text='Return Date')
+        self.return_date_label.pack()
+        self.return_date_entry = tk.Entry(self.customer_frame)
+        self.return_date_entry.pack()
+
+        self.name_label = tk.Label(self.customer_frame, text='Name')
+        self.name_label.pack()
+        self.name_entry = tk.Entry(self.customer_frame)
+        self.name_entry.pack()
 
     def add_book(self):
         book_side = self.book_side.get()
@@ -167,6 +185,10 @@ class LibraryManagementGUI:
 
     def delete_book(self):
         if self.admin_logged_in:
+            # Remove any previously created input fields for adding a book
+            for widget in self.admin_frame.winfo_children():
+                widget.destroy()
+
             # Show the Admin frame with input fields for deleting books
             self.admin_frame.pack(side='right')
             self.customer_frame.pack_forget()
@@ -215,6 +237,27 @@ class LibraryManagementGUI:
         self.delete_book_title_entry.delete(0, tk.END)
         self.delete_book_label.config(text='Book deleted successfully!')
 
+    def rent_book(self):
+        # Get input field values
+        rent_book_title = self.search_book_entry.get()
+        rent_date = self.rent_date_entry.get()
+        return_date = self.return_date_entry.get()
+        name = self.name_entry.get()
+
+        # Write rent information to file
+        with open('rent_data.txt', 'a') as f:
+            f.write(f"{rent_book_title},{rent_date},{return_date},{name}\n")
+
+        # Clear input fields
+        self.search_book_entry.delete(0, tk.END)
+        self.rent_date_entry.delete(0, tk.END)
+        self.return_date_entry.delete(0, tk.END)
+        self.name_entry.delete(0, tk.END)
+
+        # Display success message
+        print("Success message should appear now")
+        success_label = tk.Label(self.customer_frame, text="You rented a book.", fg="green")
+        success_label.pack()
 
 
 if __name__ == '__main__':
