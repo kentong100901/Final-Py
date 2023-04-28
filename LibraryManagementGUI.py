@@ -1,4 +1,4 @@
-# ***************************************************************
+
 # Name : ProgramNameTong
 # Author: Than Tong
 # Created : * Course: CIS 152 - Data Structure
@@ -14,22 +14,25 @@
 # I have not used unauthorized source code, either modified or
 # unmodified. I have not given other fellow student(s) access
 # to my program.
+import os
 import tkinter as tk
 
-
+RENT_DATA_FILE = 'rent_data.txt'
 
 class LibraryManagementGUI:
 
     def __init__(self):
         self.root = tk.Tk()
         self.root.title('Library Management System')
-        self.root.geometry('400x200')
+        self.root.geometry('400x300')
 
         # Create Admin frame for adding books
         self.admin_frame = tk.Frame(self.root, width=200, height=200)
+        self.init_admin_frame()
 
         # Create Customer frame for searching books
         self.customer_frame = tk.Frame(self.root, width=200, height=200)
+        self.init_customer_frame()
 
         # Create buttons to choose between Admin and Customer sides
         self.admin_button = tk.Button(self.root, text='Admin', command=self.show_admin)
@@ -60,39 +63,67 @@ class LibraryManagementGUI:
         self.rent_book_button = tk.Button(self.customer_frame, text='Rent Book', command=self.rent_book)
         self.rent_book_button.pack(pady=10)
 
+        self.return_book_button = tk.Button(self.customer_frame, text='Rental Return', command=self.admin_rental_return)
+        self.return_book_button.pack()
+
         # Hide the Admin and Customer frames initially
         self.admin_frame.pack_forget()
         self.customer_frame.pack_forget()
 
         # Set admin_logged_in to False by default
         self.admin_logged_in = False
+
+    def update_most_recent(self):
+        if os.path.exists(RENT_DATA_FILE):
+            last_line = ''
+            with open(RENT_DATA_FILE, 'r') as fin:
+                for line in fin:
+                    last_line = line.strip()
+            if last_line:
+                self.recent_rental_book_label.config(text=last_line)
+                self.recent_rental_book_label.pack()
+    def init_admin_frame(self):
+        # Create labels and input fields for adding books
+        self.add_book_label = tk.Label(self.admin_frame, text='Add Book')
+        self.add_book_label.pack()
+
+        self.book_side_label = tk.Label(self.admin_frame, text='Side')
+        self.book_side_label.pack()
+        self.book_side = tk.Entry(self.admin_frame)
+        self.book_side.pack()
+
+        self.book_line_label = tk.Label(self.admin_frame, text='Line')
+        self.book_line_label.pack()
+        self.book_line = tk.Entry(self.admin_frame)
+        self.book_line.pack()
+
+        self.book_title_label = tk.Label(self.admin_frame, text='Title')
+        self.book_title_label.pack()
+        self.book_title = tk.Entry(self.admin_frame)
+        self.book_title.pack()
+
+        self.add_book_button = tk.Button(self.admin_frame, text='Add Book', command=self.add_book)
+        self.add_book_button.pack()
+
+        self.btn_check_rental = tk.Button(self.admin_frame, text='Check Rental', command=self.check_rental)
+        self.btn_check_rental.pack()
+
+        # Create a label for the book title of the most recent rental
+        self.recent_rental_label = tk.Label(self.admin_frame, text='Most Recent Rental:')
+        self.recent_rental_label.pack()
+
+        self.recent_rental_book_label = tk.Label(self.admin_frame, text='')
+        self.update_most_recent()
+
+        self.return_book_button = tk.Button(self.admin_frame, text='Rental Return', command=self.admin_rental_return)
+        self.return_book_button.pack()
+
     def show_admin(self):
         if self.admin_logged_in:
             # Show the Admin frame with input fields for adding books
+            self.update_most_recent()
             self.admin_frame.pack(side='right')
             self.customer_frame.pack_forget()
-
-            # Create labels and input fields for adding books
-            self.add_book_label = tk.Label(self.admin_frame, text='Add Book')
-            self.add_book_label.pack()
-
-            self.book_side_label = tk.Label(self.admin_frame, text='Side')
-            self.book_side_label.pack()
-            self.book_side = tk.Entry(self.admin_frame)
-            self.book_side.pack()
-
-            self.book_line_label = tk.Label(self.admin_frame, text='Line')
-            self.book_line_label.pack()
-            self.book_line = tk.Entry(self.admin_frame)
-            self.book_line.pack()
-
-            self.book_title_label = tk.Label(self.admin_frame, text='Title')
-            self.book_title_label.pack()
-            self.book_title = tk.Entry(self.admin_frame)
-            self.book_title.pack()
-
-            self.add_book_button = tk.Button(self.admin_frame, text='Add Book', command=self.add_book)
-            self.add_book_button.pack()
 
         else:
             # Show the password window and hide the Customer frame
@@ -125,10 +156,8 @@ class LibraryManagementGUI:
             self.password_label.config(text='Incorrect password, try again...')
             self.password_entry.delete(0, tk.END)  # Add this line to reset the entry field
 
-    def show_customer(self):
-        # Show the Customer frame and hide the Admin frame
-        self.customer_frame.pack(side='right')
-        self.admin_frame.pack_forget()
+    def init_customer_frame(self):
+        return
         self.rent_date_label = tk.Label(self.customer_frame, text='Rent Date')
         self.rent_date_label.pack()
         self.rent_date_entry = tk.Entry(self.customer_frame)
@@ -143,6 +172,24 @@ class LibraryManagementGUI:
         self.name_label.pack()
         self.name_entry = tk.Entry(self.customer_frame)
         self.name_entry.pack()
+
+    def show_customer(self):
+        # Show the Customer frame and hide the Admin frame
+        self.customer_frame.pack(side='right')
+        self.admin_frame.pack_forget()
+
+    def check_rental(self):
+        if not os.path.exists(RENT_DATA_FILE):
+            self.display_popup('No data found')
+            return
+
+        rent_window = tk.Toplevel(self.root)
+        rent_window.title('Rental Details')
+
+        with open(RENT_DATA_FILE, 'r') as fin:
+            for line in fin:
+                book_title_label = tk.Label(rent_window, text=line)
+                book_title_label.pack()
 
     def add_book(self):
         book_side = self.book_side.get()
@@ -182,6 +229,52 @@ class LibraryManagementGUI:
         else:
             search_results_str = 'No results found.'
         self.search_results_label.config(text=search_results_str)
+
+    def admin_rental_return(self):
+        rental_ret_window = tk.Toplevel(self.root)
+        rental_ret_window.title("Return rental")
+        name_label = tk.Label(rental_ret_window, text='Name')
+        name_label.pack()
+        name_input = tk.Entry(rental_ret_window)
+        name_input.pack()
+
+        title_label = tk.Label(rental_ret_window, text='Title')
+        title_label.pack()
+        title_input = tk.Entry(rental_ret_window)
+        title_input.pack()
+
+        btn_return = tk.Button(rental_ret_window, text='Return', command=lambda: self.return_rental(name_input.get(),
+                                                                                                    title_input.get()))
+        btn_return.pack()
+
+        btn_close = tk.Button(rental_ret_window, text='Close', command=lambda: rental_ret_window.destroy())
+        btn_close.pack()
+
+    def return_rental(self, name, title):
+        if not name or not title:
+            self.display_popup('Invalid input!')
+        else:
+            found_rental = False
+            with open(RENT_DATA_FILE, "r") as f:
+                lines = [] #    f.readlines()
+                for line in f:
+                    lines.append(line)
+                    book_title, rent_date, return_date, rent_name = line.strip().split(',')
+                    if book_title == title and rent_name == name:
+                        found_rental = True
+
+            if found_rental:
+                with open(RENT_DATA_FILE, "w") as f:
+                    for line in lines:
+                        book_title, rent_date, return_date, rent_name = line.strip().split(',')
+                        if book_title != title and rent_name != name:
+                            f.write(line)
+                        else:
+                            print("Rental returned: " + line)
+                self.display_popup('Book returned!')
+            else:
+                print('Book not found! Name: ' + name + ' - title: ' + title)
+                self.display_popup('Book not found!')
 
     def delete_book(self):
         if self.admin_logged_in:
@@ -238,26 +331,59 @@ class LibraryManagementGUI:
         self.delete_book_label.config(text='Book deleted successfully!')
 
     def rent_book(self):
-        # Get input field values
-        rent_book_title = self.search_book_entry.get()
-        rent_date = self.rent_date_entry.get()
-        return_date = self.return_date_entry.get()
-        name = self.name_entry.get()
+        # Show the Rental Details window
+        rent_window = tk.Toplevel(self.root)
+        rent_window.title('Rental Details')
 
-        # Write rent information to file
-        with open('rent_data.txt', 'a') as f:
-            f.write(f"{rent_book_title},{rent_date},{return_date},{name}\n")
+        # Create labels and input fields for the rental details
+        book_title_label = tk.Label(rent_window, text='Book Title')
+        book_title_label.pack()
+        book_title_entry = tk.Entry(rent_window)
+        book_title_entry.pack()
 
-        # Clear input fields
-        self.search_book_entry.delete(0, tk.END)
-        self.rent_date_entry.delete(0, tk.END)
-        self.return_date_entry.delete(0, tk.END)
-        self.name_entry.delete(0, tk.END)
+        rent_date_label = tk.Label(rent_window, text='Rent Date')
+        rent_date_label.pack()
+        rent_date_entry = tk.Entry(rent_window)
+        rent_date_entry.pack()
 
-        # Display success message
-        print("Success message should appear now")
-        success_label = tk.Label(self.customer_frame, text="You rented a book.", fg="green")
-        success_label.pack()
+        return_date_label = tk.Label(rent_window, text='Return Date')
+        return_date_label.pack()
+        return_date_entry = tk.Entry(rent_window)
+        return_date_entry.pack()
+
+        name_label = tk.Label(rent_window, text='Name')
+        name_label.pack()
+        name_entry = tk.Entry(rent_window)
+        name_entry.pack()
+
+        # Create a button to save the rental details
+        save_button = tk.Button(rent_window, text='Save Rental',
+                                command=lambda: [self.save_rental(book_title_entry.get(),
+                                                                 rent_date_entry.get(),
+                                                                 return_date_entry.get(),
+                                                                 name_entry.get()), rent_window.destroy()])
+        save_button.pack()
+
+    def display_popup(self, text):
+        popup_msg = tk.Toplevel(self.root)
+        popup_msg.title('Error')
+        popup_label = tk.Label(popup_msg, text=text)
+        popup_label.pack()
+        ok_button = tk.Button(popup_msg, text='OK',
+                              command=lambda: popup_msg.destroy())
+        ok_button.pack()
+    def save_rental(self, book_title, rent_date, return_date, name):
+        if not book_title or not rent_date or not return_date or not name:
+            print('Invalid data')
+            self.display_popup('Invalid data')
+            return
+        # Save the rental details in a database or file
+        print('Rent Book:', book_title)
+        print('Rent Date:', rent_date)
+        print('Return Date:', return_date)
+        print('Name:', name)
+        with open(RENT_DATA_FILE, 'a') as f:
+            f.write(f"{book_title},{rent_date},{return_date},{name}\n")
 
 
 if __name__ == '__main__':
