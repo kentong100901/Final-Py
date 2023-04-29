@@ -1,3 +1,19 @@
+# ***************************************************************
+# Name : ProgramNameTong
+# Author: Than Tong
+# Created : * Course: CIS 152 - Data Structure
+# Version: 1.0
+# OS: Windows 11
+# IDE: Python
+# Copyright : This is my own original work
+# based onspecifications issued by our instructor
+# Description :
+#           Input: ADD HERE XXX
+#           Ouput: ADD HERE XXX
+# Academic Honesty: I attest that this is my original work.
+# I have not used unauthorized source code, either modified or
+# unmodified. I have not given other fellow student(s) access
+# to my program.
 
 # ***************************************************************
 # Name : ProgramNameTong
@@ -19,6 +35,13 @@ import os
 import tkinter as tk
 
 RENT_DATA_FILE = 'rent_data.txt'
+BOOK_DATA_FILE = 'book_data.txt'
+
+class book_data:
+    def __init__(self, side, line, title):
+        self.side = side
+        self.line = line
+        self.title = title
 
 class LibraryManagementGUI:
 
@@ -74,6 +97,14 @@ class LibraryManagementGUI:
         # Set admin_logged_in to False by default
         self.admin_logged_in = False
 
+    def quick_sort_by_title(self, arr):
+        if len(arr) <= 1:
+            return arr
+        else:
+            pivot = arr[0]
+            left = [x for x in arr[1:] if x.title < pivot.title]
+            right = [x for x in arr[1:] if x.title >= pivot.title]
+            return self.quick_sort_by_title(left) + [pivot] + self.quick_sort_by_title(right)
     def update_most_recent(self):
         if os.path.exists(RENT_DATA_FILE):
             last_line = ''
@@ -193,13 +224,31 @@ class LibraryManagementGUI:
                 book_title_label.pack()
 
     def add_book(self):
-        book_side = self.book_side.get()
-        book_line = self.book_line.get()
-        book_title = self.book_title.get()
+        input_side = self.book_side.get()
+        input_line = self.book_line.get()
+        input_title = self.book_title.get()
 
-        # Write book information to file
-        with open('book_data.txt', 'a') as f:
-            f.write(f"{book_side},{book_line},{book_title}\n")
+        if not input_side or not input_line or not input_title:
+            self.display_popup('Invalid input.')
+            return
+
+        book_list = []
+        if os.path.exists(BOOK_DATA_FILE):
+            with open(BOOK_DATA_FILE, 'r') as f:
+                for line in f:
+                    book_side, book_line, book_title = line.strip().split(',')
+                    book_list.append(book_data(book_side, book_line, book_title))
+
+        #Add new book to the list
+        book_list.append(book_data(input_side, input_line, input_title))
+
+        #Quick sort book list
+        if len(book_list) > 1:
+            book_list = self.quick_sort_by_title(book_list)
+
+        with open(BOOK_DATA_FILE, 'w') as f:
+            for book in book_list:
+                f.write(f"{book.side},{book.line},{book.title}\n")
 
         # Clear input fields
         self.book_side.delete(0, tk.END)
